@@ -1,0 +1,67 @@
+read.csv("E:/R learning/ 
+         basic-statistics-and-projects-in-R/
+         05_06_2023_basic-statistics-and-projects-in-R/
+         project-template-main/data/raw/insurance_with_date.csv")
+str(insurance_with_date)
+
+read_csv("E:/R learning/ 
+           basic-statistics-and-projects-in-R/
+           05_06_2023_basic-statistics-and-projects-in-R/
+           project-template-main/data/raw/insurance_with_date.csv")
+
+
+fac_sex <-as.factor(insurance_with_date$sex)
+str(fac_sex)
+
+fac_region <- as.factor(insurance_with_date$region)
+str(fac_region)
+
+#  exercise  #
+reformatted <- insurance_with_date |> 
+  mutate(
+    across(c(sex, region), factor),
+    # sex = factor(sex),
+    # region = factor(region),
+    gt2_children = children > 2,
+    smokes = smoker == "yes",
+    date_6m = date + months(6)
+    # date_6m = date + 30.4 * 6
+  )
+
+#  ggplots visualization  #
+library(ggplot2)
+library(dplyr)
+
+data_ebola <- read_csv("data/raw/ebola.csv")
+
+
+data_ebola <- arrange(data_ebola, Date)
+
+head(data_ebola)
+
+dim(data_ebola)
+
+data_ebola_cum_cases <- data_ebola %>%
+     select(date = Date, country = Country, Cum_conf_cases = Cum_conf_cases) %>%
+     filter(date <= as.Date("2015-05-31") &
+           (country=="Guinea" | country=="Liberia" | country=="Sierra Leone"))
+
+# basic plot #
+plot_ebola_point_v0 <- ggplot(data = data_ebola_cum_cases, 
+                              mapping = aes(x = date, y = Cum_conf_cases)) + 
+  geom_point()
+plot_ebola_point_v0
+
+# line plot #
+plot_covid_line_v1 <- ggplot(data = data_ebola_cum_cases, 
+                             mapping = aes(x = date, y = Cum_conf_cases)) + 
+  geom_line(mapping = aes(group = country))
+plot_covid_line_v1
+
+# colmn plot #
+plot_covid_col_v2 <- ggplot(data = data_ebola_cum_cases, 
+                            mapping = aes(x = date, y = Cum_conf_cases)) + 
+  geom_col(position = "stack")
+plot_covid_col_v2
+
+
