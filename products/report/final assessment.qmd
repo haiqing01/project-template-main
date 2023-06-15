@@ -1,0 +1,163 @@
+---
+title: "BSPR final assessment"
+author: "Haiqing Zhong"
+date: "`r date()`"
+format: 
+  html:
+    fig-width: 8
+    fig-height: 4
+    code-fold: true
+---
+
+# Introduction
+
+This the final assessment of Basic Statistics and Projects in R course. We will explore two data set in the package medicaldata to find something interesting.
+
+# Preparation
+
+Firstly, we should install R packages and load them to R studio.
+
+```{r}
+#| output: false
+#| warning: false
+# Set language
+Sys.setenv(LANG = "en")
+
+# Clear memory
+rm(list=ls())
+gc()
+
+# Load libraries
+library_names <- c("tidyverse", "knitr", "downlit", "ggcorrplot","medicaldata", "rstatix", "datarium","PairedData")
+
+lapply(library_names, function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x)
+    library(x, character.only = TRUE)
+  }
+})
+
+# loading packages #
+library(tidyverse)
+library(ggplot2)
+library(here)
+library(unibeCols)
+library(medicaldata)
+library(knitr)
+library(snapshot)
+library(bain)
+library(ggpubr)
+```
+
+# Data
+
+## Explore the dataset covid_testing in Medicaldata
+
+### Read and process data
+
+1, We read and process data of COVID-19 testing at CHOP in 2020 which is from the dataset Medicaldata.
+
+```{r}
+#| warning: false
+# read data #
+data_covid_testing <- medicaldata::covid_testing
+
+str(data_covid_testing)
+
+# display the first 5 rows of the data set
+head(data_covid_testing,5)
+```
+
+### Mean and median calculation
+
+2, We want to explore if there is difference in the pan_days between man and woman
+
+```{r}
+#| warning: false
+# calculate the mean, median, standard deviation of ct value #
+summary_stat <- data_covid_testing %>%
+  group_by(gender) %>%                        
+  summarise(Mean_pan = mean(pan_day, na.rm = TRUE),
+            Median_pan = median(pan_day, na.rm = TRUE),
+            Variance_pan = var(pan_day, na.rm = TRUE),
+            SD_ct = sd(pan_day, na.rm = TRUE),
+            IQR_ct = IQR(pan_day, na.rm = TRUE))
+
+summary_stat %>%
+  kable(digits = 2)
+```
+
+### Box plot and scatter plot
+
+3, box plot and scatter plot
+
+```{r}
+# creat boxplot and scatter plot #
+
+data_covid_testing %>%
+  ggplot(aes(x = gender, y = pan_day, fill = gender)) +
+  geom_boxplot() + 
+  theme_bw()
+
+data_covid_testing %>%
+  ggplot(aes(x = age, y = pan_day, fill = gender, colour = gender)) +
+  geom_point() + 
+  theme_bw()
+```
+
+### Two sample t test
+
+4, then we do a t-test to see if there is a significant difference between female and male
+
+```{r}
+#| warning: false
+data_covid_testing %>%
+  ggplot(aes(x = gender, pan_day, fill = gender)) +
+  geom_boxplot() +
+  theme_bw() +
+  stat_compare_means(aes(label = after_stat(p.signif)), method = "t.test", ref.group = "female")
+```
+
+### Conclusion
+
+5, The p value is above 0.5, there is no significant difference in the pan_days between man and woman.
+
+## Explore the dataset smartplill in medicaldata
+
+we want to see the distribution of the age
+
+```{r}
+#| warning: false
+smartpill |> 
+  ggplot(aes(Age)) +
+  geom_histogram(bins = 20,
+                 color = "black",
+                 fill = "steelblue") + 
+  theme_bw() + 
+  geom_vline(aes(xintercept=mean(smartpill$Age, na.rm =  TRUE)), color="red") +
+  geom_vline(aes(xintercept=median(smartpill$Age, na.rm =  TRUE)), color="blue")
+```
+
+Generate a quantile-quantile (QQ) plot using `geom_qq` and `geom_qq_line` to assess its alignment with the theoretical line.
+
+```{r}
+#| warning: false
+smartpill %>%
+  ggplot(aes(sample = Age)) + 
+  geom_qq_line(distribution = stats::qnorm) +
+  geom_qq(color = "steelblue", distribution = stats::qnorm) + 
+  xlab("Theoretical Quantiles") +
+  ylab("Sample Quantiles") +
+  theme_bw()
+```
+
+then we test if it's normal distribution
+
+```{r}
+#| warning: false
+smartpill %>%
+  shapiro_test(Age) %>%
+  kable(digits = 10)
+```
+
+conclusion: p value is below 0.5, so the age is non-normal distributed.
