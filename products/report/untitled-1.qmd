@@ -1,14 +1,10 @@
 ---
-title: ""
+title: "Untitled"
+format: html
 author: "Haiqing Zhong"
 date: "`r date()`"
-format: 
-    html:
-      fig-height: 4
-      fig-width: 8
-      dpi: 300
+editor: visual
 ---
-
 
 ```{r}
 #| output: false
@@ -19,25 +15,9 @@ library(unibeCols)
 
 ```
 
-
 ## Introduction
 
-
 ## Data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## Quarto
 
